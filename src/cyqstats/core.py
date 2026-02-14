@@ -6,7 +6,7 @@ from importlib import import_module
 from typing import Iterable
 
 try:
-    _cycore = import_module("cyquant._cycore")
+    _cycore = import_module("cyqstats._cycore")
     _StreamStatsImpl = _cycore.CyStreamStats
     _GroupedStreamStatsImpl = _cycore.CyGroupedStreamStats
 except (ImportError, ModuleNotFoundError):

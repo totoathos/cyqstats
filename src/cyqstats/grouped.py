@@ -7,7 +7,7 @@ from importlib import import_module
 from .core import _RunningMoments
 
 try:
-    _GroupedImpl = import_module("cyquant._cycore").CyGroupedStreamStats
+    _GroupedImpl = import_module("cyqstats._cycore").CyGroupedStreamStats
 except Exception:
     _GroupedImpl = None
 

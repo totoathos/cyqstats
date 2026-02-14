@@ -1,6 +1,6 @@
-# Cyquant
+# Cyqstats
 
-**Cyquant** es una librería para cálculo de métricas en streaming orientada a datasets grandes.
+**Cyqstats** es una librería para cálculo de métricas en streaming orientada a datasets grandes.
 
 ## Estado actual (MVP)
 
@@ -16,7 +16,7 @@ Este repositorio ya incluye la base funcional para avanzar:
 
 ```python
 from random import Random
-from cyquant import StreamStats, GroupedStreamStats
+from cyqstats import StreamStats, GroupedStreamStats
 
 rng = Random(42)
 values = [rng.gauss(0, 1) for _ in range(100_000)]
