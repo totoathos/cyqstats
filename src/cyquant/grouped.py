@@ -3,12 +3,17 @@ from __future__ import annotations
 from itertools import zip_longest
 from math import nan, sqrt
 from typing import Iterable
-
+from importlib import import_module
 from .core import _RunningMoments
 
+try:
+    _GroupedImpl = import_module("cyquant._cycore").CyGroupedStreamStats
+except Exception:
+    _GroupedImpl = None
 
-class GroupedStreamStats:
-    """Streaming stats partitioned by int group ids."""
+
+class PyGroupedStreamStats:
+    """Streaming stats partitioned by int group ids (pure Python fallback)."""
 
     def __init__(self, n_groups: int) -> None:
         if n_groups <= 0:
@@ -26,9 +31,9 @@ class GroupedStreamStats:
                 raise ValueError(f"group id {idx} out of range [0, {self.n_groups})")
             self._aggs[idx].add(value)
 
-    def merge(self, other: "GroupedStreamStats") -> None:
-        if not isinstance(other, GroupedStreamStats):
-            raise TypeError("other must be GroupedStreamStats")
+    def merge(self, other: "PyGroupedStreamStats") -> None:
+        if not isinstance(other, PyGroupedStreamStats):
+            raise TypeError("other must be PyGroupedStreamStats")
         if other.n_groups != self.n_groups:
             raise ValueError("n_groups mismatch")
         for left, right in zip(self._aggs, other._aggs):
@@ -38,15 +43,7 @@ class GroupedStreamStats:
         out: dict[int, dict[str, float | int | None]] = {}
         for i, agg in enumerate(self._aggs):
             if agg.count == 0:
-                out[i] = {
-                    "count": 0,
-                    "sum": 0.0,
-                    "mean": None,
-                    "min": None,
-                    "max": None,
-                    "var": None,
-                    "std": None,
-                }
+                out[i] = {"count": 0, "sum": 0.0, "mean": None, "min": None, "max": None, "var": None, "std": None}
                 continue
             variance = max(agg.m2 / agg.count, 0.0)
             out[i] = {
@@ -67,13 +64,11 @@ class GroupedStreamStats:
         mins = [a.minimum if a.count else nan for a in self._aggs]
         maxs = [a.maximum if a.count else nan for a in self._aggs]
         vars_ = [max(a.m2 / a.count, 0.0) if a.count else nan for a in self._aggs]
-        stds = [sqrt(v) if v == v else nan for v in vars_]
-        return {
-            "count": counts,
-            "sum": sums,
-            "mean": means,
-            "min": mins,
-            "max": maxs,
-            "var": vars_,
-            "std": stds,
-        }
+        stds = [sqrt(v) if v == v else nan for v in vars_]  # v==v => no es NaN
+        return {"count": counts, "sum": sums, "mean": means, "min": mins, "max": maxs, "var": vars_, "std": stds}
+
+
+# Export público: Cython si está, si no fallback Python
+GroupedStreamStats = _GroupedImpl or PyGroupedStreamStats  # type: ignore
+
+__all__ = ["GroupedStreamStats", "PyGroupedStreamStats"]

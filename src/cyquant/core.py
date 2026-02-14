@@ -2,8 +2,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import inf, sqrt
+from importlib import import_module
 from typing import Iterable
 
+try:
+    _cycore = import_module("cyquant._cycore")
+    _StreamStatsImpl = _cycore.CyStreamStats
+    _GroupedStreamStatsImpl = _cycore.CyGroupedStreamStats
+except (ImportError, ModuleNotFoundError):
+    _StreamStatsImpl = None
 
 @dataclass(slots=True)
 class _RunningMoments:
@@ -43,18 +50,18 @@ class _RunningMoments:
         n1 = self.count
         n2 = other.count
         delta = other.mean - self.mean
-        combined_count = n1 + n2
+        combined = n1 + n2
 
-        self.mean = (n1 * self.mean + n2 * other.mean) / combined_count
-        self.m2 = self.m2 + other.m2 + delta * delta * n1 * n2 / combined_count
-        self.count = combined_count
+        self.mean = (n1 * self.mean + n2 * other.mean) / combined
+        self.m2 = self.m2 + other.m2 + delta * delta * n1 * n2 / combined
+        self.count = combined
         self.total += other.total
         self.minimum = min(self.minimum, other.minimum)
         self.maximum = max(self.maximum, other.maximum)
 
 
-class StreamStats:
-    """Streaming stats container for numeric values."""
+class PyStreamStats:
+    """Streaming stats container for numeric values (pure Python fallback)."""
 
     def __init__(self) -> None:
         self._agg = _RunningMoments()
@@ -63,31 +70,29 @@ class StreamStats:
         for x in values:
             self._agg.add(x)
 
-    def merge(self, other: "StreamStats") -> None:
-        if not isinstance(other, StreamStats):
+    def merge(self, other: "PyStreamStats") -> None:
+        if not isinstance(other, PyStreamStats):
             raise TypeError("other must be StreamStats")
         self._agg.merge(other._agg)
 
     def result(self) -> dict[str, float | int | None]:
-        count = self._agg.count
-        if count == 0:
-            return {
-                "count": 0,
-                "sum": 0.0,
-                "mean": None,
-                "min": None,
-                "max": None,
-                "var": None,
-                "std": None,
-            }
+        c = self._agg.count
+        if c == 0:
+            return {"count": 0, "sum": 0.0, "mean": None, "min": None, "max": None, "var": None, "std": None}
 
-        variance = max(self._agg.m2 / count, 0.0)
+        var_ = max(self._agg.m2 / c, 0.0)
         return {
-            "count": count,
+            "count": c,
             "sum": self._agg.total,
             "mean": self._agg.mean,
             "min": self._agg.minimum,
             "max": self._agg.maximum,
-            "var": variance,
-            "std": sqrt(variance),
+            "var": var_,
+            "std": sqrt(var_),
         }
+
+
+#fallback py
+StreamStats = _StreamStatsImpl or PyStreamStats
+
+__all__ = ["StreamStats", "PyStreamStats"]
