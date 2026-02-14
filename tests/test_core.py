@@ -1,6 +1,8 @@
 from random import Random
 
-from cyquant import StreamStats
+from cyqstats import StreamStats
+from cyqstats.core import PyStreamStats
+
 
 
 def _mean(values):
@@ -45,7 +47,7 @@ def test_streamstats_merge():
 
 
 def test_variance_is_clamped_to_zero_for_numerical_noise():
-    s = StreamStats()
+    s = PyStreamStats()
     s.add_values([1.0])
     s._agg.m2 = -1e-15
 

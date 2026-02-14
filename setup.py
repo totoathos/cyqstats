@@ -4,8 +4,8 @@ import numpy as np
 
 extensions = [
     Extension(
-        "cyquant._cycore",
-        ["src/cyquant/_cycore.pyx"],
+        "cyqstats._cycore",
+        ["src/cyqstats/_cycore.pyx"],
         include_dirs=[np.get_include()],
     )
 ]
