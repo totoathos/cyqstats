@@ -46,12 +46,9 @@ pip install -e ".[dev]"
 PYTHONPATH=src pytest -q
 ```
 
-## Próximos pasos recomendados
+## Próximos pasos
 
-1. **Cythonizar el hot path** (`add_values` y `add`) manteniendo esta API.
-2. Agregar percentiles streaming (P² como primera implementación).
-3. Añadir benchmark CLI comparando contra `pandas.groupby`.
-4. Publicar wheels (`manylinux`, `macOS`, `Windows`).
+1. Añadir benchmark CLI comparando contra `pandas.groupby`.
 
 ## Licencia
 
