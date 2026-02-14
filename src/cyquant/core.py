@@ -92,7 +92,7 @@ class PyStreamStats:
         }
 
 
-# Export final: si hay Cython, úsalo; si no, fallback Python
-StreamStats = _StreamStatsImpl or PyStreamStats  # type: ignore
+#fallback py
+StreamStats = _StreamStatsImpl or PyStreamStats
 
 __all__ = ["StreamStats", "PyStreamStats"]

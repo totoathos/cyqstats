@@ -3,7 +3,7 @@ requires = ["setuptools>=61", "wheel", "Cython>=3.0", "numpy>=1.23"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cyquant"
+name = "streamstats"
 version = "0.1.0"
 description = "Streaming statistics and grouped aggregations for large event streams"
 readme = "readme.md"
