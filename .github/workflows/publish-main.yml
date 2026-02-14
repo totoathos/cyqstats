@@ -1,4 +1,4 @@
-name: Upload Python Package
+name: Publish to PyPI
 
 on:
   release:
@@ -12,6 +12,7 @@ jobs:
     name: Build wheels
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
@@ -26,15 +27,20 @@ jobs:
         run: |
           python -m pip install -U pip cibuildwheel
           python -m cibuildwheel --output-dir dist
+        env:
+          # Opcional pero recomendado: testear el wheel instalado
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_COMMAND: python -m pytest -q {project}/tests
 
       - uses: actions/upload-artifact@v4
         with:
-          name: release-dists
+          name: release-dists-${{ matrix.os }}
           path: dist/*
 
   build_sdist:
     name: Build sdist
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -49,7 +55,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: release-dists
+          name: release-dists-sdist
           path: dist/*
 
   pypi-publish:
@@ -64,10 +70,11 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: release-dists
+          pattern: release-dists-*
+          merge-multiple: true
           path: dist/
 
-      - name: Publish
+      - name: Publish to PyPI (Trusted Publishing)
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
