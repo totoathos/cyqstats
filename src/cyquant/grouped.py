@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from itertools import zip_longest
 from math import nan, sqrt
 from typing import Iterable
 
@@ -16,12 +17,11 @@ class GroupedStreamStats:
         self._aggs = [_RunningMoments() for _ in range(self.n_groups)]
 
     def add(self, group_ids: Iterable[int], values: Iterable[float]) -> None:
-        gids = [int(g) for g in group_ids]
-        vals = [float(v) for v in values]
-        if len(gids) != len(vals):
-            raise ValueError("group_ids and values must have the same length")
-
-        for idx, value in zip(gids, vals):
+        marker = object()
+        for gid, value in zip_longest(group_ids, values, fillvalue=marker):
+            if gid is marker or value is marker:
+                raise ValueError("group_ids and values must have the same length")
+            idx = int(gid)
             if idx < 0 or idx >= self.n_groups:
                 raise ValueError(f"group id {idx} out of range [0, {self.n_groups})")
             self._aggs[idx].add(value)
@@ -48,7 +48,7 @@ class GroupedStreamStats:
                     "std": None,
                 }
                 continue
-            variance = agg.m2 / agg.count
+            variance = max(agg.m2 / agg.count, 0.0)
             out[i] = {
                 "count": agg.count,
                 "sum": agg.total,
@@ -66,7 +66,7 @@ class GroupedStreamStats:
         means = [a.mean if a.count else nan for a in self._aggs]
         mins = [a.minimum if a.count else nan for a in self._aggs]
         maxs = [a.maximum if a.count else nan for a in self._aggs]
-        vars_ = [a.m2 / a.count if a.count else nan for a in self._aggs]
+        vars_ = [max(a.m2 / a.count, 0.0) if a.count else nan for a in self._aggs]
         stds = [sqrt(v) if v == v else nan for v in vars_]
         return {
             "count": counts,

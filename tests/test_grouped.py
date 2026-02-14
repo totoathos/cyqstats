@@ -1,5 +1,7 @@
 from random import Random
 
+import pytest
+
 from cyquant import GroupedStreamStats
 
 
@@ -48,3 +50,9 @@ def test_grouped_merge():
     for gid in range(n_groups):
         count = sum(1 for g in gids if g == gid)
         assert out[gid]["count"] == count
+
+
+def test_grouped_add_validates_mismatched_lengths_streaming():
+    g = GroupedStreamStats(n_groups=3)
+    with pytest.raises(ValueError, match="same length"):
+        g.add([0, 1, 2], [1.0, 2.0])
