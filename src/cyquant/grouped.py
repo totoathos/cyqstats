@@ -3,11 +3,11 @@ from __future__ import annotations
 from itertools import zip_longest
 from math import nan, sqrt
 from typing import Iterable
-
+from importlib import import_module
 from .core import _RunningMoments
 
 try:
-    from ._cycore import CyGroupedStreamStats as _GroupedImpl  # type: ignore
+    _GroupedImpl = import_module("cyquant._cycore").CyGroupedStreamStats
 except Exception:
     _GroupedImpl = None
 

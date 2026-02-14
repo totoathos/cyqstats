@@ -2,13 +2,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import inf, sqrt
+from importlib import import_module
 from typing import Iterable
 
 try:
-    from ._cycore import CyStreamStats as _StreamStatsImpl, CyGroupedStreamStats as _GroupedStreamStatsImpl
+    _cycore = import_module("cyquant._cycore")
+    _StreamStatsImpl = _cycore.CyStreamStats
+    _GroupedStreamStatsImpl = _cycore.CyGroupedStreamStats
 except (ImportError, ModuleNotFoundError):
     _StreamStatsImpl = None
-    _GroupedStreamStatsImpl = None
 
 @dataclass(slots=True)
 class _RunningMoments:
