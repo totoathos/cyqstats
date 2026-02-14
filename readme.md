@@ -1,24 +1,58 @@
 # Cyquant
 
-**Cyquant** es una librería para calcular **métricas y percentiles en streaming** (sin comerte la RAM) con un núcleo acelerado en **Cython**. Ideal para logs/CSV/eventos donde Python empieza a toser con los bucles.  
+**Cyquant** es una librería para cálculo de métricas en streaming orientada a datasets grandes.
 
-> Objetivo: *agregaciones + p90/p95 por grupo* rápido, reproducible y fácil de integrar con el ecosistema Python.
+## Estado actual (MVP)
 
----
+Este repositorio ya incluye la base funcional para avanzar:
 
-## Features
+- `StreamStats` para agregaciones incrementales globales:
+  - `count`, `sum`, `mean`, `min`, `max`, `var`, `std`.
+- `GroupedStreamStats` para agregaciones por grupo (`int32` recomendado en tu pipeline):
+  - `add(group_ids, values)`, `merge(...)`, `to_dict()`, `result_arrays()`.
+- Merge estable por fórmula de momentos (Welford combinable), ideal para procesar por chunks.
 
-- **Streaming aggregations**: `count`, `sum`, `mean`, `min`, `max`, `var/std` (según config)
-- **Percentiles en streaming**: P² (rápido) y/o **t-digest** (más preciso) *(según implementación)*
-- **Group-by eficiente**: por claves pre-encodeadas a `int32` (recomendado) o strings (más lento)
-- **Mergeable**: combinar resultados parciales (útil para procesamiento por chunks o paralelo)
-- **API simple**: alimentás eventos, pedís resultados
-- Núcleo en **Cython + NumPy** (memoryviews, structs, `nogil` donde aplique)
+## Quickstart
 
----
+```python
+from random import Random
+from cyquant import StreamStats, GroupedStreamStats
 
-## Instalación
+rng = Random(42)
+values = [rng.gauss(0, 1) for _ in range(100_000)]
 
-### Desde PyPI (cuando publiques)
+# Global
+s = StreamStats()
+s.add_values(values)
+print(s.result())
+
+# Grouped
+gids = [i % 50 for i in range(len(values))]
+g = GroupedStreamStats(n_groups=50)
+g.add(gids, values)
+print(g.result_arrays()["mean"][:5])
+```
+
+## Instalación local
+
 ```bash
-pip install streamstats
+pip install -U pip
+pip install -e ".[dev]"
+```
+
+## Tests
+
+```bash
+PYTHONPATH=src pytest -q
+```
+
+## Próximos pasos recomendados
+
+1. **Cythonizar el hot path** (`add_values` y `add`) manteniendo esta API.
+2. Agregar percentiles streaming (P² como primera implementación).
+3. Añadir benchmark CLI comparando contra `pandas.groupby`.
+4. Publicar wheels (`manylinux`, `macOS`, `Windows`).
+
+## Licencia
+
+MIT.
