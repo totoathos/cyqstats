@@ -42,3 +42,13 @@ def test_streamstats_merge():
     assert merged["count"] == 2000
     assert abs(merged["mean"] - _mean(values)) < 1e-9
     assert abs(merged["var"] - _var(values)) < 1e-9
+
+
+def test_variance_is_clamped_to_zero_for_numerical_noise():
+    s = StreamStats()
+    s.add_values([1.0])
+    s._agg.m2 = -1e-15
+
+    out = s.result()
+    assert out["var"] == 0.0
+    assert out["std"] == 0.0

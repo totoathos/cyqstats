@@ -5,7 +5,7 @@ from math import inf, sqrt
 from typing import Iterable
 
 
-@dataclass
+@dataclass(slots=True)
 class _RunningMoments:
     count: int = 0
     total: float = 0.0
@@ -61,7 +61,7 @@ class StreamStats:
 
     def add_values(self, values: Iterable[float]) -> None:
         for x in values:
-            self._agg.add(float(x))
+            self._agg.add(x)
 
     def merge(self, other: "StreamStats") -> None:
         if not isinstance(other, StreamStats):
@@ -81,7 +81,7 @@ class StreamStats:
                 "std": None,
             }
 
-        variance = self._agg.m2 / count
+        variance = max(self._agg.m2 / count, 0.0)
         return {
             "count": count,
             "sum": self._agg.total,
