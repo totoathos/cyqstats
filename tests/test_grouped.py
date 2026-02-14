@@ -2,7 +2,7 @@ from random import Random
 
 import pytest
 
-from cyquant import GroupedStreamStats
+from cyqstats import GroupedStreamStats
 
 
 def _mean(values):
