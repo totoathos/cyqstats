@@ -1,6 +1,6 @@
 # Cyqstats
 
-**Cyqstats** es una librería para cálculo de métricas en streaming orientada a datasets grandes.
+**Cyqstats** es una librería para cálculo de métricas en streaming orientada a datasets grandes, con **core opcional en Cython** (más rápido) y **fallback Python** (si no hay compilación disponible).
 
 ## Estado actual (MVP)
 
@@ -11,6 +11,7 @@ Este repositorio ya incluye la base funcional para avanzar:
 - `GroupedStreamStats` para agregaciones por grupo (`int32` recomendado en tu pipeline):
   - `add(group_ids, values)`, `merge(...)`, `to_dict()`, `result_arrays()`.
 - Merge estable por fórmula de momentos (Welford combinable), ideal para procesar por chunks.
+- Wheels publicadas en PyPI (instalación directa con `pip install cyqstats`).
 
 ## Quickstart
 
@@ -33,23 +34,33 @@ g.add(gids, values)
 print(g.result_arrays()["mean"][:5])
 ```
 
-## Instalación local
+## Instalación
+```bash
+pip install cyqstats
+```
+Verificar si se esta usando el core Cython
+```bash
+python -c "from cyqstats import StreamStats; print(StreamStats.__module__)"
+```
+Esperado:
+cyqstats._cycore → core Cython activo ✅
+cyqstats.core → fallback Python ✅
 
+## Instalación Local
 ```bash
 pip install -U pip
 pip install -e ".[dev]"
 ```
+En Windows, para compilar el core Cython localmente se requiere Microsoft Visual C++ Build Tools.
+Si no lo tenés, igual podés desarrollar usando el fallback Python.
 
-## Tests
-
+## Test
 ```bash
-PYTHONPATH=src pytest -q
+python -m pytest -q
 ```
 
-## Próximos pasos
-
-1. Añadir benchmark CLI comparando contra `pandas.groupby`.
-
-## Licencia
-
-MIT.
+## Próximos pasos:
+- Añadir benchmark CLI comparando contra pandas.groupby y numpy (casos: global + grouped).
+- Agregar cuantiles aproximados (p50/p90/p99) vía t-digest o P² para telemetría real.
+- Exponer API “numpy-friendly” (aceptar np.ndarray directamente y tipos int32/float64 como fast-path).
+- Documentar casos de uso (telemetría/ETL) con ejemplos reproducibles.
