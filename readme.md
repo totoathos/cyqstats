@@ -1,6 +1,6 @@
 # Cyqstats
 
-**Cyqstats** es una librería para cálculo de métricas en streaming orientada a datasets grandes, con **core opcional en Cython** (más rápido) y **fallback Python** (si no hay compilación disponible).
+**Cyqstats** es una librería de Python para calcular estadísticas en tiempo real (count/sum/mean/min/max/var/std) sobre grandes volúmenes de datos sin cargar todo en memoria. Incluye agregaciones por grupo (IDs enteros) y permite mergear acumuladores, ideal para pipelines por chunks o procesamiento paralelo. Tiene core en Cython para mejor rendimiento y se instala directo con pip.
 
 ## Estado actual (MVP)
 
